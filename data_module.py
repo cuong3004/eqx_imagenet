@@ -36,7 +36,7 @@ class ImagenetModule(LightningDataModule):
         image = tf.image.decode_jpeg(example['image'])
         class_num = example['class']
         # filename = example['filename']
-        return {"image":image, "labels":class_num}
+        return {"images":image, "labels":class_num}
     
 
     # def to_jax(self, sample):
@@ -59,12 +59,16 @@ class ImagenetModule(LightningDataModule):
         dataset = dataset.map(self.read_tfrecord, num_parallel_calls=AUTO)
         
         if train:
-            dataset = dataset.map(self.train_augmentor, num_parallel_calls=AUTO)
+            preprocesing = lambda sample: {"images":self.train_augmentor(sample["images"]), 
+                                           "labels":sample["labels"]}
+            dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.shuffle(2048)
             dataset = dataset.batch(args["batch_size_train"])
         else:
-            dataset = dataset.map(self.valid_augmentor, num_parallel_calls=AUTO)
+            preprocesing = lambda sample: {"images":self.valid_augmentor(sample["images"]), 
+                                           "labels":sample["labels"]}
+            dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.batch(args["batch_size_valid"])
         

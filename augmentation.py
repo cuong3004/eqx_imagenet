@@ -132,5 +132,7 @@ class ValidRandomAugmentor(keras.Model):
         x = self.random_resized_crop(x)
         x = x/255.0
         return x
+    
+# def preprocessing(sample):
 
 
