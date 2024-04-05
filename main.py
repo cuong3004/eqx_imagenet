@@ -29,6 +29,7 @@ from jax.lib import xla_bridge
 import optax
 import numpy as np
 from data_module import ImagenetModule
+from config import args
 
 print(xla_bridge.get_backend().platform)
 
@@ -157,7 +158,7 @@ class LitResnet(LightningModule):
                                                             self.optim.update
                                                           )
         
-        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict)
+        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict, batch_size=args['batch_size_train'])
         self.log_dict(stat_dict, prog_bar=True)
         return stat_dict
     
@@ -166,7 +167,7 @@ class LitResnet(LightningModule):
         x, y = batch["images"], batch["labels"]
         
         stat_dict = make_valid_step(self.inference_model, x, y)
-        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict)
+        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict, batch_size=args['batch_size_valid'])
         self.log_dict(stat_dict, prog_bar=True)
         
     def configure_optimizers(self):
