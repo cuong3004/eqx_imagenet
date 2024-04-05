@@ -105,6 +105,7 @@ class TrainRandomAugmentor(keras.Model):
         self.random_solarize = RandomSolarize()
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
+        x = tf.image.resize(x, (int(self.image_size*3/2), int(self.image_size*3/2)))
         x = self.random_resized_crop(x)
         x = self.random_flip(x)
         x = self.random_color_jitter(x)
@@ -129,7 +130,8 @@ class ValidRandomAugmentor(keras.Model):
         self.random_solarize = RandomSolarize()
 
     def call(self, x: tf.Tensor) -> tf.Tensor:
-        x = self.random_resized_crop(x)
+        # x = self.random_resized_crop(x)
+        x = tf.image.resize(x, (self.image_size, self.image_size))
         x = x/255.0
         return x
     
