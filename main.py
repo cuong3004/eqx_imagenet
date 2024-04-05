@@ -104,8 +104,8 @@ def create_model(key):
     
     model = mobilenet_v3_small(torch_weights=None, num_classes=10)
 #     print(model.features)
-    model.features.layers[0].layers[0] = eqx.nn.Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[0])
-    model.features[1].block.layers[0].layers[0] = eqx.nn.Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[1])
+    # model.features.layers[0].layers[0] = eqx.nn.Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[0])
+    # model.features[1].block.layers[0].layers[0] = eqx.nn.Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[1])
     # model.conv1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
     # model.maxpool = nn.Identity()
     return model
