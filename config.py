@@ -7,7 +7,7 @@ train_step_epoch = 10
 
 valid_set_len = 50000
 # valid_step_epoch = -(-valid_set_len // batch_size_valid)
-train_step_epoch = 10
+valid_step_epoch = 10
 
 args = {
     "train_dirs" : [
