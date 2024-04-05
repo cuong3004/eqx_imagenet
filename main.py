@@ -166,6 +166,7 @@ class LitResnet(LightningModule):
         x, y = batch["images"], batch["labels"]
         
         stat_dict = make_valid_step(self.inference_model, x, y)
+        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict)
         self.log_dict(stat_dict, prog_bar=True)
         
     def configure_optimizers(self):
