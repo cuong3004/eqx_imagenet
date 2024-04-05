@@ -36,6 +36,9 @@ print(xla_bridge.get_backend().platform)
 import tensorflow as tf 
 tf.config.optimizer.set_jit(True)
 
+input_dtype = jnp.bfloat16
+# input_dtype = jnp.float32
+
 
 @eqx.filter_jit
 def accuracy(predictions, labels):
@@ -121,7 +124,13 @@ class LitResnet(LightningModule):
         self.key = jax.random.PRNGKey(1)
         self.model_key, self.train_key, _ = jax.random.split(self.key, 3)
         
-        self.model = create_model(self.model_key)
+        # self.model = create_model(self.model_key)
+        model = create_model(self.model_key)
+        params, static = eqx.partition(model, eqx.is_array)
+#         print(jax.tree_map(lambda x:x.shape, self.model))
+        params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
+        model = eqx.combine(params, static)
+        self.model = model
         self.model_state = eqx.nn.State(self.model)
         
         num_devices = len(jax.devices())
@@ -143,6 +152,7 @@ class LitResnet(LightningModule):
                                                       self.shard.reshape(
                                                           [len(jax.devices())]+[1]*(len(x.shape)-1))
                                                      ), batch)
+        batch["images"] = batch["images"].astype(input_dtype)
         return batch
     
     def training_step(self, batch):
