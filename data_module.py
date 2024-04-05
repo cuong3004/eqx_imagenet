@@ -78,12 +78,12 @@ class ImagenetModule(LightningDataModule):
     
     def train_dataloader(self):
         datasetset = self.load_dataset(self.train_filenames, train=True)
-        dataloader = DataIterator(datasetset, args["train_step_epoch"])
+        dataloader = DataIterator(iter(datasetset), args["train_step_epoch"])
         return dataloader
 
     def val_dataloader(self):
         datasetset = self.load_dataset(self.valid_filenames, train=False)
-        dataloader = DataIterator(datasetset, args["valid_step_epoch"])
+        dataloader = DataIterator(iter(datasetset), args["valid_step_epoch"])
         return dataloader
 
         
