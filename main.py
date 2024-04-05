@@ -163,7 +163,7 @@ class LitResnet(LightningModule):
     
     def validation_step(self, batch, batch_idx):
         batch = self.prepare_batch(batch)
-        x, y = batch
+        x, y = batch["images"], batch["labels"]
         
         stat_dict = make_valid_step(self.inference_model, x, y)
         self.log_dict(stat_dict, prog_bar=True)
