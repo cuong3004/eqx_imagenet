@@ -158,8 +158,8 @@ class LitResnet(LightningModule):
                                                             self.optim.update
                                                           )
         
-        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict, batch_size=args['batch_size_train'])
-        self.log_dict(stat_dict, prog_bar=True)
+        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict)
+        self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_train'])
         return stat_dict
     
     def validation_step(self, batch, batch_idx):
@@ -167,8 +167,8 @@ class LitResnet(LightningModule):
         x, y = batch["images"], batch["labels"]
         
         stat_dict = make_valid_step(self.inference_model, x, y)
-        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict, batch_size=args['batch_size_valid'])
-        self.log_dict(stat_dict, prog_bar=True)
+        stat_dict = jax.tree_map(lambda x: torch.scalar_tensor(x.item()),stat_dict)
+        self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_valid'])
         
     def configure_optimizers(self):
         self.optim = optax.adam(3e-4)
