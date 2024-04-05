@@ -2,12 +2,12 @@ batch_size = 128
 batch_size_valid = batch_size
 
 train_set_len = 1281167 # for part 0 and for part 1: 655167
-# train_step_epoch = -(-train_set_len // batch_size)
-train_step_epoch = 10
+train_step_epoch = -(-train_set_len // batch_size)
+# train_step_epoch = 10
 
 valid_set_len = 50000
-# valid_step_epoch = -(-valid_set_len // batch_size_valid)
-valid_step_epoch = 10
+valid_step_epoch = -(-valid_set_len // batch_size_valid)
+# valid_step_epoch = 10
 
 args = {
     "train_dirs" : [

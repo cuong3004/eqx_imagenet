@@ -193,7 +193,17 @@ class LitResnet(LightningModule):
 model = LitResnet(lr=0.05)
 
 from pytorch_lightning.loggers import WandbLogger
-wandb_logger = WandbLogger(project="imagenet", name='eqx') 
+# wandb_logger = WandbLogger(project="imagenet", name='eqx') 
+
+from pytorch_lightning.loggers import NeptuneLogger
+import sys
+
+
+neptune_logger = NeptuneLogger(
+    project=sys.argv[0],
+    api_key=sys.argv[1],
+    name="exq"
+)
 
 imgset_module = ImagenetModule()
 
@@ -201,7 +211,7 @@ trainer = Trainer(
     max_epochs=30,
     accelerator="cpu",
     devices=None,
-    logger=wandb_logger,
+    logger=neptune_logger,
     profiler="simple"
     # callbacks=[TQDMProgressBar(refresh_rate=10)],
 )
