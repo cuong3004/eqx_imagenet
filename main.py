@@ -199,7 +199,7 @@ trainer = Trainer(
     accelerator="cpu",
     devices=None,
     logger=wandb_logger,
-    profiler="simple "
+    profiler="simple"
     # callbacks=[TQDMProgressBar(refresh_rate=10)],
 )
 
