@@ -133,9 +133,10 @@ class LitResnet(LightningModule):
         
 
     def prepare_batch(self, batch):
-        x, y = batch
-        x = np.transpose(x, (0, 3, 1, 2))
-        batch = (x, y)
+        # x, y = batch
+        print(type(batch))
+        batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
+        # batch = (x, y)
 
         batch = jax.tree_map(lambda x: jax.device_put(x, 
                                                       self.shard.reshape(
@@ -145,7 +146,7 @@ class LitResnet(LightningModule):
     
     def training_step(self, batch):
         batch = self.prepare_batch(batch)
-        x, y = batch
+        x, y = batch["images"], batch["labels"]
         
         self.model, self.model_state, \
         stat_dict, \
