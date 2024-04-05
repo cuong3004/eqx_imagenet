@@ -137,7 +137,7 @@ class LitResnet(LightningModule):
         print(type(batch))
         batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
         # batch = (x, y)
-
+        print(batch["images"].shape)
         batch = jax.tree_map(lambda x: jax.device_put(x, 
                                                       self.shard.reshape(
                                                           [len(jax.devices())]+[1]*(len(x.shape)-1))
