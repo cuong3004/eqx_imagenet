@@ -200,8 +200,8 @@ import sys
 
 
 neptune_logger = NeptuneLogger(
-    project=sys.argv[0],
-    api_key=sys.argv[1],
+    project=sys.argv[1],
+    api_key=sys.argv[2],
     name="exq"
 )
 
