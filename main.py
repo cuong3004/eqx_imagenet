@@ -36,7 +36,7 @@ print(xla_bridge.get_backend().platform)
 import tensorflow as tf 
 tf.config.optimizer.set_jit(True)
 
-input_dtype = jnp.bfloat16
+# input_dtype = jnp.bfloat16
 # input_dtype = jnp.float32
 
 
@@ -125,12 +125,12 @@ class LitResnet(LightningModule):
         self.model_key, self.train_key, _ = jax.random.split(self.key, 3)
         
         # self.model = create_model(self.model_key)
-        model = create_model(self.model_key)
-        params, static = eqx.partition(model, eqx.is_array)
-#         print(jax.tree_map(lambda x:x.shape, self.model))
-        params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
-        model = eqx.combine(params, static)
-        self.model = model
+        self.model = create_model(self.model_key)
+#         params, static = eqx.partition(model, eqx.is_array)
+# #         print(jax.tree_map(lambda x:x.shape, self.model))
+#         params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
+#         model = eqx.combine(params, static)
+        # self.model = model
         self.model_state = eqx.nn.State(self.model)
         
         num_devices = len(jax.devices())
@@ -152,7 +152,7 @@ class LitResnet(LightningModule):
                                                       self.shard.reshape(
                                                           [len(jax.devices())]+[1]*(len(x.shape)-1))
                                                      ), batch)
-        batch["images"] = batch["images"].astype(input_dtype)
+        # batch["images"] = batch["images"].astype(input_dtype)
         return batch
     
     def training_step(self, batch):
@@ -181,7 +181,7 @@ class LitResnet(LightningModule):
         self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_valid'])
         
     def configure_optimizers(self):
-        self.optim = optax.adam(3e-4)
+        self.optim = optax.lamb(3e-4)
         self.opt_state = self.optim.init(eqx.filter(self.model, eqx.is_inexact_array))
     
     def on_fit_end(self):
@@ -218,7 +218,7 @@ neptune_logger = NeptuneLogger(
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=30,
+    max_epochs=5,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,
