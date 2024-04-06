@@ -31,7 +31,7 @@ import numpy as np
 from data_module import ImagenetModule
 from config import args
 
-import dm_pix as pix
+# import dm_pix as pix
 
 print(xla_bridge.get_backend().platform)
 
