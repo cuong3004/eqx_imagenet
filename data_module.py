@@ -61,14 +61,14 @@ class ImagenetModule(LightningDataModule):
         if train:
             preprocesing = lambda sample: {"images":self.train_augmentor(sample["images"]), 
                                            "labels":sample["labels"]}
-            # dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
+            dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.shuffle(2048)
             dataset = dataset.batch(args["batch_size_train"])
         else:
             preprocesing = lambda sample: {"images":self.valid_augmentor(sample["images"]), 
                                            "labels":sample["labels"]}
-            # dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
+            dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.batch(args["batch_size_valid"])
         

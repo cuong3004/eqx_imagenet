@@ -115,27 +115,27 @@ def create_model(key):
     # model.maxpool = nn.Identity()
     return model
 
-@jax.jit
-def augmentation(key, image):
-    img_size = 224
-    keys = jax.random.split(key, 6)
-    image = jax.image.resize(image, (int(img_size*1.5), int(img_size*1.5), 3), 'linear')
-    image = pix.random_crop(keys[0], image, (img_size,img_size, 3))
-    image = pix.random_flip_left_right(keys[1], image)
-    image = pix.random_brightness(keys[2], image, 0.5)
-    image = pix.random_contrast(keys[3], image, 0.6, 1.4)
-    image = pix.random_saturation(keys[4], image, 0.6, 1.4)
-    image = pix.random_hue(keys[5], image, 0.2)
-    return image
+# @jax.jit
+# def augmentation(key, image):
+#     img_size = 224
+#     keys = jax.random.split(key, 6)
+#     image = jax.image.resize(image, (int(img_size*1.5), int(img_size*1.5), 3), 'linear')
+#     image = pix.random_crop(keys[0], image, (img_size,img_size, 3))
+#     image = pix.random_flip_left_right(keys[1], image)
+#     image = pix.random_brightness(keys[2], image, 0.5)
+#     image = pix.random_contrast(keys[3], image, 0.6, 1.4)
+#     image = pix.random_saturation(keys[4], image, 0.6, 1.4)
+#     image = pix.random_hue(keys[5], image, 0.2)
+#     return image
           
-@jax.jit
-def batch_augmentation(key, images):
-    key, newkey = jax.random.split(key)
-    batch_key = jax.random.split(key, images.shape[0])
-    images = jax.vmap(augmentation, in_axes=(0,0))(
-        batch_key, images
-    )
-    return newkey, images
+# @jax.jit
+# def batch_augmentation(key, images):
+#     key, newkey = jax.random.split(key)
+#     batch_key = jax.random.split(key, images.shape[0])
+#     images = jax.vmap(augmentation, in_axes=(0,0))(
+#         batch_key, images
+#     )
+#     return newkey, images
 
 
 
@@ -171,8 +171,8 @@ class LitResnet(LightningModule):
         # x, y = batch
         # print(type(batch))
         
-        self.data_key, batch["images"] = batch_augmentation(self.data_key, batch["images"])
-        batch["images"] = jnp.transpose(batch["images"], (0, 3, 1, 2))
+        # self.data_key, batch["images"] = batch_augmentation(self.data_key, batch["images"])
+        batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
         # batch = (x, y)
         # print(batch["images"].shape)
         batch = jax.tree_map(lambda x: jax.device_put(x, 
