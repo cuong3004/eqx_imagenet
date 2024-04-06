@@ -31,6 +31,8 @@ import numpy as np
 from data_module import ImagenetModule
 from config import args
 
+import dm_pix as pix
+
 print(xla_bridge.get_backend().platform)
 
 import tensorflow as tf 
@@ -113,6 +115,29 @@ def create_model(key):
     # model.maxpool = nn.Identity()
     return model
 
+@jax.jit
+def augmentation(key, image):
+    img_size = 224
+    keys = jax.random.split(key, 6)
+    image = jax.image.resize(image, (int(img_size*1.5), int(img_size*1.5), 3), 'linear')
+    image = pix.random_crop(keys[0], image, (img_size,img_size, 3))
+    image = pix.random_flip_left_right(keys[1], image)
+    image = pix.random_brightness(keys[2], image, 0.5)
+    image = pix.random_contrast(keys[3], image, 0.6, 1.4)
+    image = pix.random_saturation(keys[4], image, 0.6, 1.4)
+    image = pix.random_hue(keys[5], image, 0.2)
+    return image
+          
+@jax.jit
+def batch_augmentation(key, images):
+    key, newkey = jax.random.split(key)
+    batch_key = jax.random.split(key, images.shape[0])
+    images = jax.vmap(augmentation, in_axes=(0,0))(
+        batch_key, images
+    )
+    return newkey, images
+
+
 
 class LitResnet(LightningModule):
     def __init__(self, lr=0.05):
@@ -122,7 +147,7 @@ class LitResnet(LightningModule):
         self.automatic_optimization = False
         
         self.key = jax.random.PRNGKey(1)
-        self.model_key, self.train_key, _ = jax.random.split(self.key, 3)
+        self.model_key, self.train_key, self.data_key = jax.random.split(self.key, 3)
         
         # self.model = create_model(self.model_key)
         self.model = create_model(self.model_key)
@@ -145,7 +170,9 @@ class LitResnet(LightningModule):
     def prepare_batch(self, batch):
         # x, y = batch
         # print(type(batch))
-        batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
+        
+        self.data_key, batch["images"] = batch_augmentation(self.data_key, batch["images"])
+        batch["images"] = jax.transpose(batch["images"], (0, 3, 1, 2))
         # batch = (x, y)
         # print(batch["images"].shape)
         batch = jax.tree_map(lambda x: jax.device_put(x, 
@@ -181,7 +208,7 @@ class LitResnet(LightningModule):
         self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_valid'])
         
     def configure_optimizers(self):
-        self.optim = optax.lamb(3e-4)
+        self.optim = optax.adamw(3e-4)
         self.opt_state = self.optim.init(eqx.filter(self.model, eqx.is_inexact_array))
     
     def on_fit_end(self):
