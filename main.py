@@ -24,7 +24,8 @@ from jax import numpy as jnp
 import equinox as eqx
 import jax.experimental.mesh_utils as mesh_utils
 import jax.sharding as sharding
-from eqxvision.models.classification.mobilevitv3 import mobievit_xx_small_v3#mobilenet_v3_small, mo
+# from eqxvision.models.classification.mobilevitv3 import mobievit_xx_small_v3#
+from eqxvision.models import mobilenet_v3_small
 from jax.lib import xla_bridge
 import optax
 import numpy as np
@@ -108,8 +109,8 @@ def make_valid_step(
 
 def create_model(key):
     keys = jax.random.split(key, 3)
-    model = mobievit_xx_small_v3(keys[0], 1000)
-    # model = mobilenet_v3_small(torch_weights=None, num_classes=1000)
+    # model = mobievit_xx_small_v3(keys[0], 1000)
+    model = mobilenet_v3_small(torch_weights=None, num_classes=1000)
 #     print(model.features)
     # model.features.layers[0].layers[0] = eqx.nn.Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[0])
     # model.features[1].block.layers[0].layers[0] = eqx.nn.Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[1])
@@ -241,7 +242,7 @@ import sys
 neptune_logger = NeptuneLogger(
     project=sys.argv[1],
     api_key=sys.argv[2],
-    name="exq"
+    name="mobile"
 )
 
 imgset_module = ImagenetModule()
