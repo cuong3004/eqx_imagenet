@@ -83,8 +83,12 @@ def make_train_step(
     key, new_key = jax.random.split(key)
     
     (loss_value, [model_state, pred_y]), grads = loss_fn(model, model_state, x, y, key)
-    updates, opt_state = opt_update(grads, opt_state, model)
-    model = eqx.apply_updates(model, updates)
+    # updates, opt_state = opt_update(grads, opt_state, model)
+    # model = eqx.apply_updates(model, updates)
+    params, static = eqx.partition(model, eqx.is_array)
+    updates, opt_state = opt_update(grads, opt_state, params)
+    params = eqx.apply_updates(model, updates)
+    model = eqx.combine(params, static)
     
     acc = accuracy(pred_y, y)
     stat_dict = {"train_loss": loss_value, "train_acc":acc}
@@ -226,7 +230,23 @@ class LitResnet(LightningModule):
         self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_valid'])
         
     def configure_optimizers(self):
-        self.optim = optax.adamw(3e-4)
+        schedule = optax.warmup_cosine_decay_schedule(
+            init_value=0.0,
+            peak_value=0.01,
+            warmup_steps=3*args["train_step_epoch"],
+            decay_steps=80*args["train_step_epoch"],
+            end_value=0.0001,
+        )
+        
+        self.optim = optax.chain(
+            optax.clip_by_global_norm(1.0),  # Clip by the gradient by the global norm.
+            optax.MultiSteps(optax.adamw(learning_rate=schedule), every_k_schedule=3),  # Use the updates from adam.
+            # optax.scale_by_schedule(scheduler),  # Use the learning rate from the scheduler.
+            # Scale updates by -1 since optax.apply_updates is additive and we want to descend on the loss.
+            # optax.scale(-1.0)
+        )  
+        
+        # self.optim = optax.adamw(3e-4)
         self.opt_state = self.optim.init(eqx.filter(self.model, eqx.is_inexact_array))
     
     def on_fit_end(self):
@@ -257,13 +277,13 @@ import sys
 neptune_logger = NeptuneLogger(
     project=sys.argv[1],
     api_key=sys.argv[2],
-    name="vit_he"
+    name="vit_he_accumulation"
 )
 
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=100,
+    max_epochs=80,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,
