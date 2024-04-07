@@ -95,9 +95,11 @@ def make_valid_step(
     x,
     y,
 ):
-    logits, _ = jax.vmap(
+    logits = jax.vmap(
             model
         )(x)
+    print(len(logits))
+    print(logits)
 #     print(logits)
     acc = accuracy(logits, y)
     return {"valid_acc": acc}
