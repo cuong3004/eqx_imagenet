@@ -172,7 +172,7 @@ class LitResnet(LightningModule):
         params, static = eqx.partition(model, eqx.is_array)
         params = jax.tree_map(lambda x:init_param_jax.random_intit(x), params)
         # params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
-        model = eqx.combine(params, static)
+        self.model = eqx.combine(params, static)
         # self.model = model
         self.model_state = eqx.nn.State(self.model)
         
