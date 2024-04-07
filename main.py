@@ -24,8 +24,8 @@ from jax import numpy as jnp
 import equinox as eqx
 import jax.experimental.mesh_utils as mesh_utils
 import jax.sharding as sharding
-# from eqxvision.models.classification.mobilevitv3 import mobievit_xx_small_v3#
-from eqxvision.models import mobilenet_v3_small
+from eqxvision.models.classification.mobilevitv3 import mobievit_xx_small_v3
+# from eqxvision.models import mobilenet_v3_small
 from jax.lib import xla_bridge
 import optax
 import numpy as np
@@ -109,8 +109,8 @@ def make_valid_step(
 
 def create_model(key):
     keys = jax.random.split(key, 3)
-    # model = mobievit_xx_small_v3(keys[0], 1000)
-    model = mobilenet_v3_small(torch_weights=None, num_classes=1000)
+    model = mobievit_xx_small_v3(keys[0], 1000)
+    # model = mobilenet_v3_small(torch_weights=None, num_classes=1000)
 #     print(model.features)
     # model.features.layers[0].layers[0] = eqx.nn.Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[0])
     # model.features[1].block.layers[0].layers[0] = eqx.nn.Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), use_bias=False, key=keys[1])
@@ -140,6 +140,19 @@ def create_model(key):
 #     )
 #     return newkey, images
 
+class InitJax:
+    def __init__(self):
+        self.rng = jax.random.PRNGKey(0)
+        self.initializer = jax.nn.initializers.he_normal()
+
+    def random_intit(self, x):
+        if jnp.std(x) == 0 or len(x.shape)==1:
+            return x
+        else:
+            self.rng, key  = jax.random.split(self.rng, 2)
+            return self.initializer(key, x.shape, jnp.float32)  
+            
+            
 
 
 class LitResnet(LightningModule):
@@ -153,11 +166,13 @@ class LitResnet(LightningModule):
         self.model_key, self.train_key, self.data_key = jax.random.split(self.key, 3)
         
         # self.model = create_model(self.model_key)
+        init_param_jax = InitJax()
+        
         self.model = create_model(self.model_key)
-#         params, static = eqx.partition(model, eqx.is_array)
-# #         print(jax.tree_map(lambda x:x.shape, self.model))
-#         params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
-#         model = eqx.combine(params, static)
+        params, static = eqx.partition(model, eqx.is_array)
+        params = jax.tree_map(lambda x:init_param_jax.random_intit(x), params)
+        # params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
+        model = eqx.combine(params, static)
         # self.model = model
         self.model_state = eqx.nn.State(self.model)
         
@@ -242,7 +257,7 @@ import sys
 neptune_logger = NeptuneLogger(
     project=sys.argv[1],
     api_key=sys.argv[2],
-    name="mobile"
+    name="vit_he"
 )
 
 imgset_module = ImagenetModule()
