@@ -80,15 +80,15 @@ class RandomSolarize(Augmentation):
         return x
 
 
-class RandomBlur(Augmentation):
+# class RandomBlur(Augmentation):
 
-    @tf.function
-    def call(self, x: tf.Tensor) -> tf.Tensor:
+#     @tf.function
+#     def call(self, x: tf.Tensor) -> tf.Tensor:
 
-        if self.random_execute(0.2):
-            s = np.random.random()
-            return tfa.image.gaussian_filter2d(image=x, sigma=s)
-        return x
+#         if self.random_execute(0.2):
+#             s = np.random.random()
+#             return tfa.image.gaussian_filter2d(image=x, sigma=s)
+#         return x
 
 
 class TrainRandomAugmentor(keras.Model):
@@ -100,7 +100,7 @@ class TrainRandomAugmentor(keras.Model):
         self.random_resized_crop = RandomResizedCrop(image_size)
         self.random_flip = RandomFlip()
         self.random_color_jitter = RandomColorJitter()
-        self.random_blur = RandomBlur()
+        # self.random_blur = RandomBlur()
         self.random_to_grayscale = RandomToGrayscale()
         self.random_solarize = RandomSolarize()
 
@@ -125,7 +125,7 @@ class ValidRandomAugmentor(keras.Model):
         self.random_resized_crop = RandomResizedCrop(image_size)
         self.random_flip = RandomFlip()
         self.random_color_jitter = RandomColorJitter()
-        self.random_blur = RandomBlur()
+        # self.random_blur = RandomBlur()
         self.random_to_grayscale = RandomToGrayscale()
         self.random_solarize = RandomSolarize()
 
