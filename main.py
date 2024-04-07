@@ -247,7 +247,7 @@ neptune_logger = NeptuneLogger(
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=50,
+    max_epochs=100,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,
