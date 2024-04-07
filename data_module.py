@@ -21,8 +21,8 @@ class ImagenetModule(LightningDataModule):
         for valid_dir in args['valid_dirs']:
             self.valid_filenames.extend(tf.io.gfile.glob(valid_dir+'/*.tfrec*'))
             
-        self.train_augmentor = TrainRandomAugmentor(224)
-        self.valid_augmentor = ValidRandomAugmentor(224)
+        self.train_augmentor = TrainRandomAugmentor(256)
+        self.valid_augmentor = ValidRandomAugmentor(256)
 
     
     def read_tfrecord(self, example):
