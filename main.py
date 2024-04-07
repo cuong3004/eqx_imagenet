@@ -232,7 +232,7 @@ class LitResnet(LightningModule):
     def configure_optimizers(self):
         schedule = optax.warmup_cosine_decay_schedule(
             init_value=0.0,
-            peak_value=0.01,
+            peak_value=0.1,
             warmup_steps=3*args["train_step_epoch"],
             decay_steps=80*args["train_step_epoch"],
             end_value=0.0001,
