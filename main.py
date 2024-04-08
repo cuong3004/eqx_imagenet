@@ -231,14 +231,37 @@ class LitResnet(LightningModule):
         
     def configure_optimizers(self):
         
-        schedule = optax.warmup_exponential_decay_schedule(
-            init_value=0.0,
-            peak_value=0.05,
-            warmup_steps=3*args["train_step_epoch"],
-            transition_steps=2*args["train_step_epoch"],
-            end_value=0.001,
-            decay_rate=0.9
-        )
+        schedule1 = optax.warmup_exponential_decay_schedule(
+                    init_value=0.0,
+                    peak_value=0.05,
+                    warmup_steps=3*args["train_step_epoch"],
+                    transition_steps=1*args["train_step_epoch"],
+                    end_value=0.0001,
+                    decay_rate=0.6
+                )
+
+        schedule2 = optax.warmup_cosine_decay_schedule(
+                    init_value=0.0,
+                    peak_value=0.01,
+                    warmup_steps=3*args["train_step_epoch"],
+                    decay_steps=80*args["train_step_epoch"],
+                    end_value=0.0001,
+                )
+
+        def combo_schefule(i):
+            lr1 = schedule1(i)
+            lr2 = schedule2(i)
+            return jnp.max(jnp.array([lr1, lr2]))
+        
+        
+        # schedule = optax.warmup_exponential_decay_schedule(
+        #     init_value=0.0,
+        #     peak_value=0.05,
+        #     warmup_steps=3*args["train_step_epoch"],
+        #     transition_steps=2*args["train_step_epoch"],
+        #     end_value=0.001,
+        #     decay_rate=0.85
+        # )
         
         # schedule = optax.warmup_cosine_decay_schedule(
         #     init_value=0.0,
@@ -251,7 +274,7 @@ class LitResnet(LightningModule):
         
         self.optim = optax.chain(
             optax.clip_by_global_norm(1.0),  # Clip by the gradient by the global norm.
-            optax.MultiSteps(optax.adamw(learning_rate=schedule), every_k_schedule=3),  # Use the updates from adam.
+            optax.MultiSteps(optax.adamw(learning_rate=combo_schefule), every_k_schedule=3),  # Use the updates from adam.
             # optax.scale_by_schedule(scheduler),  # Use the learning rate from the scheduler.
             # Scale updates by -1 since optax.apply_updates is additive and we want to descend on the loss.
             # optax.scale(-1.0)
