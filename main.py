@@ -236,7 +236,7 @@ class LitResnet(LightningModule):
             warmup_steps=3*args["train_step_epoch"],
             decay_steps=80*args["train_step_epoch"],
             end_value=0.0001,
-            # exponent=1.3
+            exponent=1.3
         )
         
         self.optim = optax.chain(
