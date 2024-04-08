@@ -230,14 +230,24 @@ class LitResnet(LightningModule):
         self.log_dict(stat_dict, prog_bar=True, batch_size=args['batch_size_valid'])
         
     def configure_optimizers(self):
-        schedule = optax.warmup_cosine_decay_schedule(
+        
+        schedule = optax.warmup_exponential_decay_schedule(
             init_value=0.0,
             peak_value=0.05,
             warmup_steps=3*args["train_step_epoch"],
-            decay_steps=80*args["train_step_epoch"],
-            end_value=0.0001,
-            exponent=1.3
+            transition_steps=2*args["train_step_epoch"],
+            end_value=0.001,
+            decay_rate=0.9
         )
+        
+        # schedule = optax.warmup_cosine_decay_schedule(
+        #     init_value=0.0,
+        #     peak_value=0.05,
+        #     warmup_steps=3*args["train_step_epoch"],
+        #     decay_steps=80*args["train_step_epoch"],
+        #     end_value=0.0001,
+        #     exponent=1.3
+        # )
         
         self.optim = optax.chain(
             optax.clip_by_global_norm(1.0),  # Clip by the gradient by the global norm.
@@ -284,7 +294,7 @@ neptune_logger = NeptuneLogger(
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=35,
+    max_epochs=25,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,
