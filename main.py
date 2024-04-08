@@ -288,7 +288,7 @@ import sys
 neptune_logger = NeptuneLogger(
     project=sys.argv[1],
     api_key=sys.argv[2],
-    name="vit_he_accumulation0.1"
+    name="vit_he_accumulation0.5"
 )
 
 imgset_module = ImagenetModule()
