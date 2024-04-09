@@ -8,10 +8,10 @@ from pytorch_lightning import LightningDataModule
 from augmentation import TrainRandomAugmentor, ValidRandomAugmentor
 import tensorflow_datasets as tfds
 
-if args["input_dtype"] == "bfloat16":
-    from tensorflow.keras import mixed_precision
-    policy = mixed_precision.Policy('mixed_bfloat16')
-    mixed_precision.set_global_policy(policy)
+# if args["input_dtype"] == "bfloat16":
+#     from tensorflow.keras import mixed_precision
+#     policy = mixed_precision.Policy('mixed_bfloat16')
+#     mixed_precision.set_global_policy(policy)
 
 
 class ImagenetModule(LightningDataModule):
@@ -66,14 +66,14 @@ class ImagenetModule(LightningDataModule):
         dataset = dataset.map(self.read_tfrecord, num_parallel_calls=AUTO)
         
         if train:
-            preprocesing = lambda sample: {"images":self.train_augmentor(sample["images"]), 
+            preprocesing = lambda sample: {"images":self.train_augmentor(sample["images"]).astype(args["input_dtype"]), 
                                            "labels":sample["labels"]}
             dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.shuffle(2048)
             dataset = dataset.batch(args["batch_size_train"])
         else:
-            preprocesing = lambda sample: {"images":self.valid_augmentor(sample["images"]), 
+            preprocesing = lambda sample: {"images":self.valid_augmentor(sample["images"]).astype(args["input_dtype"]), 
                                            "labels":sample["labels"]}
             dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
