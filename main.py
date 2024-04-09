@@ -99,7 +99,8 @@ def make_valid_step(
     model,
     x,
     y,
-):
+):  
+    print("valid", x.dtype, y.dtype)
     logits, _ = jax.vmap(
             model
         )(x)
@@ -192,7 +193,7 @@ class LitResnet(LightningModule):
     def prepare_batch(self, batch):
         # x, y = batch
         # print(type(batch))
-        
+        print("dtype", batch["images"].dtype)
         # self.data_key, batch["images"] = batch_augmentation(self.data_key, batch["images"])
         batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
         # batch = (x, y)
