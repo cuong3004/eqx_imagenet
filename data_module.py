@@ -52,6 +52,8 @@ class ImagenetModule(LightningDataModule):
     #     sample['labels'] = jnp.array(sample['labels'], dtype=jnp.float32)
     #     return sample['images'], sample['labels']
     
+    def convert_dtype(self, x):
+        return tf.cast(x, args["input_dtype"])
     
     def load_dataset(self, filenames, train=True):
         # assert type(train) == bool
@@ -66,14 +68,14 @@ class ImagenetModule(LightningDataModule):
         dataset = dataset.map(self.read_tfrecord, num_parallel_calls=AUTO)
         
         if train:
-            preprocesing = lambda sample: {"images":self.train_augmentor(sample["images"]).astype(args["input_dtype"]), 
+            preprocesing = lambda sample: {"images":self.convert_dtype(self.train_augmentor(sample["images"])), 
                                            "labels":sample["labels"]}
             dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
             dataset = dataset.shuffle(2048)
             dataset = dataset.batch(args["batch_size_train"])
         else:
-            preprocesing = lambda sample: {"images":self.valid_augmentor(sample["images"]).astype(args["input_dtype"]), 
+            preprocesing = lambda sample: {"images":self.convert_dtype(self.valid_augmentor(sample["images"])), 
                                            "labels":sample["labels"]}
             dataset = dataset.map(preprocesing, num_parallel_calls=AUTO)
             dataset = dataset.repeat()
