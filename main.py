@@ -65,6 +65,7 @@ def loss_fn(
     pred_y, model_state= jax.vmap(
         model, axis_name="batch", in_axes=(0, None, 0), out_axes=(0, None)
     )(x, model_state, batched_keys)
+    pred_y = pred_y.astype(jnp.float32)
     fn = optax.softmax_cross_entropy_with_integer_labels
 
     return fn(pred_y, y).mean(), [model_state, pred_y]
