@@ -247,7 +247,7 @@ class LitResnet(LightningModule):
                     peak_value=0.03,
                     warmup_steps=3*args["train_step_epoch"],
                     decay_steps=80*args["train_step_epoch"],
-                    end_value=0.0001,
+                    end_value=0.001,
                 )
 
         # def combo_schefule(i):
