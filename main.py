@@ -244,7 +244,7 @@ class LitResnet(LightningModule):
 
         schedule = optax.warmup_cosine_decay_schedule(
                     init_value=0.0,
-                    peak_value=0.01,
+                    peak_value=0.03,
                     warmup_steps=3*args["train_step_epoch"],
                     decay_steps=80*args["train_step_epoch"],
                     end_value=0.0001,
@@ -319,7 +319,7 @@ neptune_logger = NeptuneLogger(
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=30,
+    max_epochs=80,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,
