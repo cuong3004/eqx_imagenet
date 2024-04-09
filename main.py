@@ -79,7 +79,7 @@ def make_train_step(
     opt_state,
     opt_update
 ):
-    print(x.dtype, y.dtype)
+    # print(x.dtype, y.dtype)
     key, new_key = jax.random.split(key)
     
     (loss_value, [model_state, pred_y]), grads = loss_fn(model, model_state, x, y, key)
@@ -100,7 +100,7 @@ def make_valid_step(
     x,
     y,
 ):  
-    print("valid", x.dtype, y.dtype)
+    # print("valid", x.dtype, y.dtype)
     logits, _ = jax.vmap(
             model
         )(x)
@@ -193,7 +193,7 @@ class LitResnet(LightningModule):
     def prepare_batch(self, batch):
         # x, y = batch
         # print(type(batch))
-        print("dtype", batch["images"].dtype)
+        # print("dtype", batch["images"].dtype)
         # self.data_key, batch["images"] = batch_augmentation(self.data_key, batch["images"])
         batch["images"] = np.transpose(batch["images"], (0, 3, 1, 2))
         # batch = (x, y)
