@@ -39,7 +39,7 @@ print(xla_bridge.get_backend().platform)
 import tensorflow as tf 
 tf.config.optimizer.set_jit(True)
 
-# input_dtype = jnp.bfloat16
+# input_dtype = "bfloat16"
 # input_dtype = jnp.float32
 
 
@@ -79,7 +79,7 @@ def make_train_step(
     opt_state,
     opt_update
 ):
-    
+    print(x.dtype, y.dtype)
     key, new_key = jax.random.split(key)
     
     (loss_value, [model_state, pred_y]), grads = loss_fn(model, model_state, x, y, key)
@@ -175,7 +175,7 @@ class LitResnet(LightningModule):
         self.model = create_model(self.model_key)
         params, static = eqx.partition(self.model, eqx.is_array)
         params = jax.tree_map(lambda x:init_param_jax.random_intit(x), params)
-        # params = jax.tree_map(lambda x:x.astype(input_dtype) if x.dtype!=jnp.bool_ else x, params)
+        params = jax.tree_map(lambda x:x.astype(args["input_dtype"]) if x.dtype!=jnp.bool_ else x, params)
         self.model = eqx.combine(params, static)
         # self.model = model
         self.model_state = eqx.nn.State(self.model)
@@ -231,16 +231,16 @@ class LitResnet(LightningModule):
         
     def configure_optimizers(self):
         
-        schedule1 = optax.warmup_exponential_decay_schedule(
-                    init_value=0.0,
-                    peak_value=0.05,
-                    warmup_steps=3*args["train_step_epoch"],
-                    transition_steps=1*args["train_step_epoch"],
-                    end_value=0.0001,
-                    decay_rate=0.6
-                )
+        # schedule1 = optax.warmup_exponential_decay_schedule(
+        #             init_value=0.0,
+        #             peak_value=0.05,
+        #             warmup_steps=3*args["train_step_epoch"],
+        #             transition_steps=1*args["train_step_epoch"],
+        #             end_value=0.0001,
+        #             decay_rate=0.6
+        #         )
 
-        schedule2 = optax.warmup_cosine_decay_schedule(
+        schedule = optax.warmup_cosine_decay_schedule(
                     init_value=0.0,
                     peak_value=0.01,
                     warmup_steps=3*args["train_step_epoch"],
@@ -248,10 +248,10 @@ class LitResnet(LightningModule):
                     end_value=0.0001,
                 )
 
-        def combo_schefule(i):
-            lr1 = schedule1(i)
-            lr2 = schedule2(i)
-            return jnp.max(jnp.array([lr1, lr2]))
+        # def combo_schefule(i):
+        #     lr1 = schedule1(i)
+        #     lr2 = schedule2(i)
+        #     return jnp.max(jnp.array([lr1, lr2]))
         
         
         # schedule = optax.warmup_exponential_decay_schedule(
@@ -274,7 +274,7 @@ class LitResnet(LightningModule):
         
         self.optim = optax.chain(
             optax.clip_by_global_norm(1.0),  # Clip by the gradient by the global norm.
-            optax.MultiSteps(optax.adamw(learning_rate=combo_schefule), every_k_schedule=3),  # Use the updates from adam.
+            optax.MultiSteps(optax.adamw(learning_rate=schedule), every_k_schedule=3),  # Use the updates from adam.
             # optax.scale_by_schedule(scheduler),  # Use the learning rate from the scheduler.
             # Scale updates by -1 since optax.apply_updates is additive and we want to descend on the loss.
             # optax.scale(-1.0)
@@ -311,13 +311,13 @@ import sys
 neptune_logger = NeptuneLogger(
     project=sys.argv[1],
     api_key=sys.argv[2],
-    name="vit_he_accumulation0.5"
+    name="bfloat16"
 )
 
 imgset_module = ImagenetModule()
 
 trainer = Trainer(
-    max_epochs=25,
+    max_epochs=30,
     accelerator="cpu",
     devices=None,
     logger=neptune_logger,

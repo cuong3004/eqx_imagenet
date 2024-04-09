@@ -8,6 +8,12 @@ from pytorch_lightning import LightningDataModule
 from augmentation import TrainRandomAugmentor, ValidRandomAugmentor
 import tensorflow_datasets as tfds
 
+if args["input_dtype"] == "bfloat16":
+    from tensorflow.keras import mixed_precision
+    policy = mixed_precision.Policy('mixed_bfloat16')
+    mixed_precision.set_global_policy(policy)
+
+
 class ImagenetModule(LightningDataModule):
     def __init__(self):
         super().__init__()
@@ -34,6 +40,7 @@ class ImagenetModule(LightningDataModule):
         }
         example = tf.io.parse_single_example(example, features)
         image = tf.image.decode_jpeg(example['image'])
+        # image = image.
         class_num = example['class']
         # filename = example['filename']
         return {"images":image, "labels":class_num}

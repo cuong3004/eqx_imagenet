@@ -10,6 +10,7 @@ valid_step_epoch = -(-valid_set_len // batch_size_valid)
 # valid_step_epoch = 10
 
 args = {
+    "input_dtype" : "bfloat16",
     "train_dirs" : [
         "gs://kds-c4cba4c00046f81926f20139f46645709fa1603a292f9f09205c1f5e",
         "gs://kds-479b543df23eb937562459c88992db7890d5fe810a9e77d67406f4a7"],
